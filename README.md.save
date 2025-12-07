@@ -1,0 +1,8 @@
+# 1. Yangi faylni Git kuzatuviga qo'shish
+git add README.md
+
+# 2. O'zgarishni tasdiqlash
+git commit -m "Docs: Added comprehensive README file for project documentation"
+
+# 3. GitHub'ga yuborish
+git push origin main

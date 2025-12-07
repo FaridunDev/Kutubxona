@@ -1,0 +1,20 @@
+# Python / Django
+__pycache__/
+*.pyc
+*.log
+.DS_Store
+
+# Virtual muhit (Sizning holatingizda 'env')
+env/
+venv/
+*.egg-info/
+
+# Maxfiy konfiguratsiya (Eng muhimi!)
+.env
+config/settings.py  # Agar maxfiy kalitlar bevosita settings.py da bo'lsa (tavsiya etilmaydi)
+
+# Ma'lumotlar bazasi fayllari (agar SQLite ishlatilgan bo'lsa)
+*.sqlite3
+
+# Maxsus fayllar (PostgreSQL parolini yashirish uchun)
+db.sqlite3

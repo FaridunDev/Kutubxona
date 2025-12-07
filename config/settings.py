@@ -1,22 +1,25 @@
 import os
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
+
+# .env ni yuklash
+load_dotenv()
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ===============================
 # 1. XAVFSIZLIK (SECURITY)
 # ===============================
-try:
-    SECRET_KEY = os.environ['SECRET_KEY']
-except KeyError:
-    if os.environ.get('DJANGO_DEBUG', 'True') == 'True':
-        SECRET_KEY = 'django-insecure-36-(4k6or1b=rn+o5b7r$^81dhz3omo-&uh9tkvwhi^dw%15go' 
-    else:
-        raise Exception("SECRET_KEY muhit o'zgaruvchisi topilmadi!")
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise Exception("SECRET_KEY .env faylida topilmadi!")
+
+DEBUG = os.getenv("DJANGO_DEBUG", "True") == "True"
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
 
 
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True' 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',') 
 # ===============================
 # 2. Ilovalar (INSTALLED APPS)
 # ===============================
@@ -29,14 +32,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Uchinchi tomon ilovalari (API va autentifikatsiya uchun)
+    # 3rd-party
     'rest_framework',
-    'rest_framework_simplejwt.token_blacklist', 
-    'django_filters', 
-    'drf_yasg', 
-    'corsheaders', 
-    
-    # Lokal loyiha ilovalari
+    'rest_framework_simplejwt.token_blacklist',
+    'django_filters',
+    'drf_yasg',
+    'corsheaders',
+
+    # Local apps
     'accounts',
     'books',
     'borrowing',
@@ -47,12 +50,13 @@ INSTALLED_APPS = [
     'logs',
 ]
 
+
 # ===============================
 # 3. Middleware
 # ===============================
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware', 
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -63,65 +67,52 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'config.urls'
-AUTH_USER_MODEL = "accounts.User" # Maxsus User modelini belgilash
+AUTH_USER_MODEL = "accounts.User"
+
+
 # ===============================
-# 4. Ma'lumotlar BAZASI (PostgreSQL)
+# 4. DATABASE (PostgreSQL)
 # ===============================
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        # Ma'lumotlar DB nomini .env dan olish
-        'NAME': os.environ.get('DB_NAME', 'Kutubxona'),
-        # Ma'lumotlar DB foydalanuvchisini .env dan olish
-        'USER': os.environ.get('DB_USER', 'postgres'), 
-        # --- PAROLNI YASHIRISH ---
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'admin123'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '5432'),
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
 
-#Qolgan qismlar (Password validation, Internationalization, Static files, DEFAULT_AUTO_FIELD)
-
 # ===============================
-# 5. REST Framework + JWT Sozlamalari
+# 5. Django REST + JWT
 # ===============================
 
 REST_FRAMEWORK = {
-    # Hamma API so'rovlari uchun default autentifikatsiya usuli
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-    # Agar ruxsatnoma view ichida belgilangan bo'lmasa, default ruxsatnoma.
-    # Productionda bu IsAuthenticated bo'lishi kerak.
-    'DEFAULT_PERMISSION_CLASSES': (
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ),
-    # Filtrlash mexanizmi
+    ],
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
 }
 
 SIMPLE_JWT = {
-    # Access Token muddati (Hozirgi: 60 daqiqa)
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60), 
-    # Refresh Token muddati (Hozirgi: 7 kun)
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7), 
-    # Refresh Token yangilanganda eskisini o'chirish
-    'ROTATE_REFRESH_TOKENS': True, 
-    # Yangilangandan keyin eski Refresh Tokenni qora ro'yxatga kiritish
-    'BLACKLIST_AFTER_ROTATION': True, 
-    # Autentifikatsiya sarlavhasi turi
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
 
 # ===============================
-# 6. CORS Sozlamalari
+# 6. CORS
 # ===============================
 
-# Barcha domenlardan APIga kirishga ruxsat beradi (Rivojlanish uchun).
-# Productionda ma'lum domenlar ro'yxatini ko'rsatish tavsiya etiladi (CORS_ALLOWED_ORIGINS).
 CORS_ALLOW_ALL_ORIGINS = True
+
